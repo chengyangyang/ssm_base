@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-4.3.xsd
+           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+	
+	<!-- 自动扫描 -->
+	<context:component-scan base-package="ch.softi.*">
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/> 
+	</context:component-scan> 
+	<!-- 引入配置文件 -->
+	 <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	<property name="location" value="classpath:jdbc.properties"></property>
+	</bean>
+	
+	 <bean id="oracleDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+	<property name="driverClass" value="${jdbc.oracle.driverClassName}"></property>
+	<property name="jdbcUrl" value="${jdbc.oracle.url}"></property>
+	<property name="user" value="${jdbc.oracle.username}"></property>
+	<property name="password" value="${jdbc.oracle.password}"></property>
+	</bean> 
+	
+	 <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+	 <property name="dataSource" ref="oracleDataSource"></property>
+	<!--  <property name="configLocation" value="classpath:MyBatis-config.xml"></property>  -->
+	<property name="mapperLocations" value="classpath:mapper/*.xml"></property>
+	 </bean>
+	 
+	 <!--将mybatis接口的实现加入到ioc容器中  -->
+	 <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+	 <!--扫描所有的dao接口的实现加入到容器中  -->
+	 <property name="basePackage" value="ch.softi.*"></property>
+	 <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+	 </bean>
+	 
+	 <!-- 事物管理器的配置 -->
+	 <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+	 <property name="dataSource" ref="oracleDataSource"></property>
+	 </bean>
+	 
+	 
+	<!--  开启注解事物，使用xml表达式
+	 <aop:config>
+	 <aop:pointcut expression="execution(* com.guigu.service..*(..) )" id="txPoint"/>
+	 <aop:advisor advice-ref="txAdvice" pointcut-ref="txPoint"/>
+	 </aop:config>
+	 配置事物增强 
+	 <tx:advice id="txAdvice" transaction-manager="transactionManager">
+	 <tx:attributes>
+	 所有方法都是事物方法 
+	 <tx:method name="*"/>
+	 <tx:method name="get*" read-only="true"/>
+	 
+	 </tx:attributes>
+	 
+	 </tx:advice>
+	
+	  -->
+	
+	 
+</beans>
